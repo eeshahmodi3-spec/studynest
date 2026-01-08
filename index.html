@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>StudyNest</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7cf3ff">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,system-ui}
+body{
+  height:100vh;
+  background:radial-gradient(circle at top,#1b1a3a,#090914);
+  color:#fff;
+}
+.app{
+  display:grid;
+  grid-template-columns:220px 1fr 360px;
+  height:100vh;
+}
+
+/* SIDEBAR */
+.sidebar{
+  padding:20px;
+  background:rgba(15,15,35,.75);
+}
+.logo{
+  font-size:22px;font-weight:700;color:#7cf3ff;margin-bottom:25px;
+}
+.nav button{
+  width:100%;padding:12px;margin-bottom:10px;border:none;
+  background:transparent;color:#cfd3ff;border-radius:12px;
+  cursor:pointer;text-align:left;
+}
+.nav button.active,.nav button:hover{
+  background:linear-gradient(135deg,#6a7cff,#45e3ff);
+  color:#000;
+}
+
+/* CENTER */
+.center{
+  display:flex;justify-content:center;align-items:center;padding:20px;
+}
+.card{
+  width:100%;height:100%;
+  background:rgba(255,255,255,.08);
+  border-radius:24px;
+  backdrop-filter:blur(18px);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  position:relative;
+}
+.card h1{margin-bottom:10px}
+
+/* HEART */
+.heart{width:240px}
+.valve{cursor:pointer}
+
+/* QUIZ */
+.quiz{display:none;text-align:center}
+.quiz button{
+  margin:10px;padding:10px 16px;
+  border:none;border-radius:10px;
+  background:#7cf3ff;color:#000;cursor:pointer;
+}
+
+/* PRO LOCK */
+.lock{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.7);
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  border-radius:24px;
+}
+.lock button{
+  margin-top:15px;padding:12px 20px;
+  border:none;border-radius:12px;
+  background:linear-gradient(135deg,#ff7ad9,#ffd86f);
+  font-weight:700;cursor:pointer;
+}
+
+/* NOTES */
+.notes{
+  padding:20px;
+  background:rgba(15,15,35,.75);
+}
+.notes h2{color:#7cf3ff;margin-bottom:10px}
+.notes p{font-size:14px;line-height:1.6;margin-bottom:12px}
+.highlight{
+  background:rgba(100,120,255,.25);
+  padding:10px;border-radius:10px;
+}
+.exam{
+  margin-top:15px;padding:14px;border-radius:14px;
+  background:linear-gradient(135deg,#ff7ad9,#ffd86f);
+  color:#000;font-weight:600;
+}
+.xp{margin-top:15px;background:#111;border-radius:10px;overflow:hidden}
+.xp div{height:10px;background:#7cf3ff;width:30%}
+
+/* MOBILE */
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+  .notes{display:none}
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<div class="sidebar">
+  <div class="logo">StudyNest</div>
+  <div class="nav">
+    <button class="active" onclick="loadSubject('bio')">🧬 Biology</button>
+    <button onclick="loadSubject('chem')">🧪 Chemistry</button>
+    <button onclick="loadSubject('math')">📐 Math</button>
+    <button onclick="showQuiz()">📝 Quiz</button>
+    <button onclick="dailyChallenge()">🔥 Daily Challenge</button>
+  </div>
+</div>
+
+<div class="center">
+  <div class="card">
+
+    <div id="study">
+      <h1 id="title">Heart Valves</h1>
+      <svg class="heart" viewBox="0 0 200 260">
+        <path d="M100 250 C10 170,10 80,80 80 C100 80,100 110,100 110
+                 C100 110,100 80,120 80 C190 80,190 170,100 250Z"
+              fill="#ff6b6b"/>
+        <circle class="valve" cx="80" cy="110" r="6" fill="#7cf3ff"
+                onclick="explain('Tricuspid valve prevents backflow')"/>
+        <circle class="valve" cx="120" cy="110" r="6" fill="#7cf3ff"
+                onclick="explain('Bicuspid valve prevents backflow')"/>
+      </svg>
+    </div>
+
+    <div id="quiz" class="quiz">
+      <h1 id="quizQ"></h1>
+      <button id="opt1" onclick="correct()"></button>
+      <button id="opt2" onclick="wrong()"></button>
+    </div>
+
+    <div class="lock" id="lock">
+      <h2>🔒 PRO</h2>
+      <p>Unlock full access</p>
+      <button onclick="window.open('https://rzp.io/l/YOUR_LINK')">Upgrade ₹99</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="notes">
+  <h2 id="noteTitle"></h2>
+  <p id="noteText"></p>
+  <div class="highlight" id="highlight"></div>
+  <div class="exam" id="exam"></div>
+  <div class="xp"><div id="xpbar"></div></div>
+</div>
+
+</div>
+
+<script>
+let xp=30;
+const subjects={
+  bio:{title:"Heart Valves",text:"Blood flows one way.",hl:"Four valves exist.",exam:"Very common IGCSE question.",quiz:{q:"Valve for left atrium?",a:"Bicuspid",b:"Tricuspid"}},
+  chem:{title:"Acids & Bases",text:"Acids release H⁺.",hl:"pH scale 0–14.",exam:"pH questions common.",quiz:{q:"Acids release?",a:"H⁺",b:"OH⁻"}},
+  math:{title:"Linear Functions",text:"y = mx + c",hl:"m is gradient.",exam:"Graph questions common.",quiz:{q:"m means?",a:"Gradient",b:"Intercept"}}
+};
+function loadSubject(s){
+  document.getElementById("study").style.display="block";
+  document.getElementById("quiz").style.display="none";
+  let x=subjects[s];
+  title.innerText=x.title;
+  noteTitle.innerText=x.title;
+  noteText.innerText=x.text;
+  highlight.innerText=x.hl;
+  exam.innerText="🔥 EXAM TIP: "+x.exam;
+  quizQ.innerText=x.quiz.q;
+  opt1.innerText=x.quiz.a;
+  opt2.innerText=x.quiz.b;
+}
+function explain(t){noteText.innerText=t}
+function showQuiz(){
+  study.style.display="none";
+  quiz.style.display="block";
+}
+function correct(){
+  xp+=20;xpbar.style.width=xp+"%";alert("Correct +20XP");
+}
+function wrong(){alert("Try again")}
+function dailyChallenge(){
+  const d=new Date().toDateString();
+  if(localStorage.d===d)return alert("Already done 🔥");
+  localStorage.d=d;xp+=25;xpbar.style.width=xp+"%";
+  alert("Daily challenge complete +25XP 🚀");
+}
+if("serviceWorker"in navigator){
+  navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+
+</body>
+</html>
